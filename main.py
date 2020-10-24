@@ -17,42 +17,49 @@ def get_inf_point_homogen(a, b, c, d):
     inf_point = np.cross(np.cross(a, b), np.cross(c, d))
     return inf_point.tolist()
 
-def main():     
-    p1 = [757, 730, 1]
-    p2 = [519, 594, 1]
-    p3 = [713, 937, 1]
-    p4 = [493, 1222, 1]
-    p5 = [478, 1080, 1]
-    p6 = [302, 1091, 1]
-    p7 = [233, 926, 1]
-    p8 = [509, 43, 1]
+def nevidljivo(p1, p2, p3, p5, p6, p7, p8):
+    p1.append(1)
+    p2.append(1)
+    p3.append(1)
+    p5.append(1)
+    p6.append(1)
+    p7.append(1)
+    p8.append(1)
 
-    img = cv2.imread('domaci1_original.jpg')
+    img = cv2.imread('domaci1_vol2_marked.jpeg')
 
-    xB = get_inf_point(p1, p3, p7, p6)    
+    xB = get_inf_point(p2, p6, p1, p5)    
     # draw lines related to xB
-    img = cv2.line(img, (p1[0], p1[1]), xB, (255, 0, 0), 2)
+    img = cv2.line(img, (p6[0], p6[1]), xB, (255, 0, 0), 2)
     img = cv2.line(img, (p7[0], p7[1]), xB, (255, 0, 0), 2)
-    img = cv2.line(img, (p2[0], p2[1]), xB, (0, 0, 255), 2)
+    img = cv2.line(img, (p8[0], p8[1]), xB, (0, 0, 255), 2)
     img = cv2.line(img, (p5[0], p5[1]), xB, (255, 0, 0), 2)
 
-    yB = get_inf_point(p7, p2, p5, p1)
+    yB = get_inf_point(p5, p6, p7, p8)    
     # draw lines related to xB
     img = cv2.line(img, (p7[0], p7[1]), yB, (0, 255, 0), 2)
-    img = cv2.line(img, (p5[0], p5[1]), yB, (0, 0, 255), 2)
-    img = cv2.line(img, (p4[0], p4[1]), yB, (0, 255, 0), 2)
+    img = cv2.line(img, (p2[0], p2[1]), yB, (0, 255, 0), 2)
+    img = cv2.line(img, (p3[0], p3[1]), yB, (0, 0, 255), 2)
     img = cv2.line(img, (p6[0], p6[1]), yB, (0, 255, 0), 2)
 
-    cv2.imwrite('domaci1_draw.jpg', img)
+    cv2.imwrite('domaci_vol2_draw.jpeg', img)
+    
+    xB_calc = get_inf_point_homogen(p2, p6, p1, p5)    
+    yB_calc = get_inf_point_homogen(p5, p6, p7, p8)
 
-    xB_calc = get_inf_point_homogen(p1, p3, p7, p6)    
-    print('xB_calc: ', xB_calc)
-    yB_calc = get_inf_point_homogen(p2, p7, p1, p5)
-    print('yB_calc: ', yB_calc)
+    p4 = get_inf_point(p8, xB_calc, p3, yB_calc)
+    print("Koordinate nevidljive tacke: ", p4)
 
-    p_inv = get_inf_point(p2, xB_calc, p1, yB_calc)
-    print(p_inv)
+def main():     
+    p1 = [542, 663]
+    p2 = [391, 771]
+    p3 = [167, 693]
+    p5 = [577, 277]
+    p6 = [426, 309]
+    p7 = [180, 270]
+    p8 = [381, 248]
 
+    nevidljivo(p1, p2, p3, p5, p6, p7, p8)
 
 if __name__ == "__main__":
     main()

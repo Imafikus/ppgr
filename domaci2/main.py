@@ -11,25 +11,8 @@ chosen_projected_points = []
 def register_mouse_click(event, x, y, flags, img):
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        if len(chosen_points) >= 2:
+        if len(chosen_projected_points) >= 2:
             print("You've already selected 2 points, please restart the program if you want a new choice, or just close the images to continue")
-            return
-
-        print(f'Point chosen: {x}, {y}')
-        chosen_points.append([x, y, 1])
-
-        font = cv2.FONT_HERSHEY_SIMPLEX 
-        cv2.putText(img, str(x) + ',' +
-                    str(y), (x,y), font, 
-                    1, (255, 0, 0), 2) 
-        cv2.imshow('Marked Image', img) 
-        cv2.moveWindow('Marked Image', 600, 100)
-
-def register_mouse_click_proj(event, x, y, flags, img):
-
-    if event == cv2.EVENT_LBUTTONDOWN:
-        if len(chosen_projected_points) >= 4:
-            print("You've already selected 4 points, please restart the program if you want a new choice, or just close the images to continue")
             return
 
         print(f'Point chosen: {x}, {y}')
@@ -38,9 +21,42 @@ def register_mouse_click_proj(event, x, y, flags, img):
         font = cv2.FONT_HERSHEY_SIMPLEX 
         cv2.putText(img, str(x) + ',' +
                     str(y), (x,y), font, 
+                    1, (255, 0, 0), 2) 
+        cv2.imshow('Marked image', img) 
+        cv2.moveWindow('Marked image', 600, 100)
+
+def register_mouse_click_proj(event, x, y, flags, img):
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        if len(chosen_points) >= 4:
+            print("You've already selected 4 points, please restart the program if you want a new choice, or just close the images to continue")
+            return
+
+        print(f'Point chosen: {x}, {y}')
+        chosen_points.append([x, y, 1])
+
+        font = cv2.FONT_HERSHEY_SIMPLEX 
+        cv2.putText(img, str(x) + ',' +
+                    str(y), (x,y), font, 
                     1, (0, 255, 0), 2) 
-        cv2.imshow('Marked Image Proj', img) 
-        cv2.moveWindow('Marked Image Proj', 600, 100)
+        cv2.imshow('Marked image', img) 
+        cv2.moveWindow('Marked image', 600, 100)
+
+def sort_4_points(points):
+    points = sorted(points, key=lambda e: (e[0]))
+    p1, p2, p3, p4 = points
+
+    if p1[1] > p2[1]:
+        tmp = p2
+        p2 = p1
+        p1 = tmp
+    
+    if p3[1] > p4[1]:
+        tmp = p4
+        p4 = p3
+        p3 = tmp
+
+    return [p1, p2, p3, p4]
 
 def solve_system(points):
 
@@ -114,11 +130,7 @@ def get_projective_matrix_naive(points, projected_points):
 
     return P_matrix
 
-
 def determine_all_chosen_points(points): 
-    """
-    Returns homogeneous coordinates for desired undistorted rectangle
-    """
     rect_point_1 = points[0]
     rect_point_3 = points[1]
     
@@ -128,126 +140,14 @@ def determine_all_chosen_points(points):
     chosen_points = [rect_point_1, rect_point_2, rect_point_3, rect_point_4]
     return sort_4_points(chosen_points)
 
-def draw_desired_rectangle(img, points, projected_points):
-    green = (0, 255, 0)
-    red = ((0, 0, 255))
-    thickness = 2
-
-    cv2.line(img, (points[0][0], points[0][1]), (points[1][0], points[1][1]), green, thickness=thickness)
-    cv2.line(img, (points[1][0], points[1][1]), (points[2][0], points[2][1]), green, thickness=thickness)
-    cv2.line(img, (points[2][0], points[2][1]), (points[3][0], points[3][1]), green, thickness=thickness)
-    cv2.line(img, (points[3][0], points[3][1]), (points[0][0], points[0][1]), green, thickness=thickness)
-
-    cv2.line(img, (projected_points[0][0], projected_points[0][1]), (projected_points[1][0], projected_points[1][1]), red, thickness=thickness)
-    cv2.line(img, (projected_points[1][0], projected_points[1][1]), (projected_points[2][0], projected_points[2][1]), red, thickness=thickness)
-    cv2.line(img, (projected_points[2][0], projected_points[2][1]), (projected_points[3][0], projected_points[3][1]), red, thickness=thickness)
-    cv2.line(img, (projected_points[3][0], projected_points[3][1]), (projected_points[0][0], projected_points[0][1]), red, thickness=thickness)
-
-    cv2.imshow('Desired rectangle', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
 def remove_distortion_naive(points, projected_points, img_path):
     img = Image.open(img_path)
     img_copy = Image.new('RGB', (img.size[0], img.size[1]), "black")
-    
-    P_matrix = get_projective_matrix_naive(points, projected_points)
-    P_matrix_inv = np.linalg.inv(P_matrix)
-    
-    cols = img_copy.size[0]
-    rows = img_copy.size[1]
-
-    for i in range(cols):
-        for j in range(rows):
-            new_coordinates = P_matrix_inv.dot([i, j, 1])
-            new_coordinates = [(x / new_coordinates[2]) for x in new_coordinates]
-
-            #? Check boundaries
-            if (new_coordinates[0] >= 0 and new_coordinates[0] < cols-1 and new_coordinates[1] >= 0 and new_coordinates[1] < rows-1):
-                new_pixel_value = img.getpixel((math.ceil(new_coordinates[0]), math.ceil(new_coordinates[1])))
-                img_copy.putpixel((i, j), new_pixel_value)
-    
-
-    fig = plt.figure(figsize = (16, 9))
-
-    plt.subplot(1, 2, 1)
-    plt.imshow(img)
-    plt.title('Input')
-
-    plt.subplot(1, 2, 2)
-    plt.imshow(img_copy)
-    plt.title('Output Naive')
-
-    plt.tight_layout()
-    plt.show()
-
-def sort_4_points(points):
-    points = sorted(points, key=lambda e: (e[0]))
-    p1, p2, p3, p4 = points
-
-    if p1[1] > p2[1]:
-        tmp = p2
-        p2 = p1
-        p1 = tmp
-    
-    if p3[1] > p4[1]:
-        tmp = p4
-        p4 = p3
-        p3 = tmp
-
-    return [p1, p2, p3, p4]
-
-def main():     
-
-    img_path = 'primer1.jpg'
-
-    img = cv2.imread(img_path)
-    img1 = img
-    img2 = img
-
-    print ("Please select 4 points in the image for distorted rectangle")
-
-    cv2.imshow('Choose distorted point', img)
-    cv2.setMouseCallback('Choose distorted point', register_mouse_click_proj, img1)
-    
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    print ("Please select 2 diagonal points in the image for normal rectangle")
-
-    cv2.imshow('Choose normal point', img)
-    cv2.setMouseCallback('Choose normal point', register_mouse_click, img2)
-    
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    sorted_chosen_projected_points = sort_4_points(chosen_projected_points)
-    sorted_chosen_points = sorted(chosen_points, key=lambda e: e[0])
-    sorted_chosen_points = determine_all_chosen_points(sorted_chosen_points)
-
-    print("Chosen distorted points: ", sorted_chosen_projected_points)
-    print("Chosen normal points: ", sorted_chosen_points)
-
-
-    draw_naive_pic(sorted_chosen_projected_points, sorted_chosen_points, img_path)
-    draw_naive_pic(None, None, img_path)
-
-def draw_naive_pic(points, points_proj, img_path):
-    img = Image.open(img_path)
-    img_copy = Image.new('RGB', (img.size[0], img.size[1]), "black")
-    print("Image size: {} x {}".format(img.size[1], img.size[0]))
             
-    # box.jpg
+    #? Put custom points and projected_points here if you dont want to input them by clicking 
+    #? After that just call this function with remove_distortion_naive(None, None, img_path) instead of calling main()
 
-    print("POINTS: ", points)
-    print("POINTS TYPE: ", type(points))
-
-    print("POINTS_PROJ: ", points_proj)
-    print("POINTS_PROJ TYPE: ", type(points_proj))
-
-
-    P = get_projective_matrix_naive(points, points_proj)
+    P = get_projective_matrix_naive(points, projected_points)
 
     P_inverse = np.linalg.inv(P)
     cols = img_copy.size[0]
@@ -276,10 +176,39 @@ def draw_naive_pic(points, points_proj, img_path):
     plt.tight_layout()
     plt.show()
 
+def main():     
+
+    #? Put different img path here if you want another image
+    img_path = 'spomenik.jpg'
+
+    img = cv2.imread(img_path)
+    img1 = img
+    img2 = img
+
+    print ("Please select 4 points in the image for distorted rectangle")
+
+    cv2.imshow('Choose distorted point', img)
+    cv2.setMouseCallback('Choose distorted point', register_mouse_click_proj, img1)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    print ("Please select 2 diagonal points in the image for the projected rectangle, first point must in the upper left, and second must be in the lower right corner")
+
+    cv2.imshow('Choose normal point', img)
+    cv2.setMouseCallback('Choose normal point', register_mouse_click, img2)
+    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    points = sort_4_points(chosen_points)
+    projected_points = sorted(chosen_projected_points, key=lambda e: e[0])
+    projected_points = determine_all_chosen_points(projected_points)
+
+    print("Chosen distorted points: ", points)
+    print("Chosen projected points: ", projected_points)
+
+    remove_distortion_naive(points, projected_points, img_path)
+
 if __name__ == "__main__":
-
-    #Odabrati 4 tacke za projekciju, odabrati 2 tacke za pravougaonik, sortirati, izgenerisati 4 projektivne tacke, primeniti algoritam
-
     main()
-    # print(sort_4_points([[361, 375, 1], [748, 495, 1], [762, 260, 1], [371, 625, 1]]))
-    # draw_naive_pic()

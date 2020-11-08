@@ -200,79 +200,52 @@ def sort_4_points(points):
 
 def main():     
 
-    # img_path = 'box.jpg'
+    img_path = 'primer1.jpg'
 
-    # img = cv2.imread(img_path)
-    # img1 = img
-    # img2 = img
+    img = cv2.imread(img_path)
+    img1 = img
+    img2 = img
 
-    # print ("Please select 4 points in the image for distorted rectangle")
+    print ("Please select 4 points in the image for distorted rectangle")
 
-    # cv2.imshow('Choose distorted point', img)
-    # cv2.setMouseCallback('Choose distorted point', register_mouse_click_proj, img1)
+    cv2.imshow('Choose distorted point', img)
+    cv2.setMouseCallback('Choose distorted point', register_mouse_click_proj, img1)
     
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    # print ("Please select 2 diagonal points in the image for normal rectangle")
+    print ("Please select 2 diagonal points in the image for normal rectangle")
 
-    # cv2.imshow('Choose normal point', img)
-    # cv2.setMouseCallback('Choose normal point', register_mouse_click, img2)
+    cv2.imshow('Choose normal point', img)
+    cv2.setMouseCallback('Choose normal point', register_mouse_click, img2)
     
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    # sorted_chosen_projected_points = sort_4_points(chosen_projected_points)
-    # sorted_chosen_points = sorted(chosen_points, key=lambda e: e[0])
-    # sorted_chosen_points = determine_all_chosen_points(sorted_chosen_points)
+    sorted_chosen_projected_points = sort_4_points(chosen_projected_points)
+    sorted_chosen_points = sorted(chosen_points, key=lambda e: e[0])
+    sorted_chosen_points = determine_all_chosen_points(sorted_chosen_points)
 
-    # print("Chosen distorted points: ", sorted_chosen_projected_points)
-    # print("Chosen normal points: ", sorted_chosen_points)
-
-    
-
-    # points = [
-    #     [358, 372, 1], 
-    #     [372, 627, 1], 
-    #     [766, 262, 1],
-    #     [747, 493, 1] 
-    # ]
-
-    # projected_points = [
-    #     [364, 371, 1], 
-    #     [364, 495, 1], 
-    #     [747, 371, 1], 
-    #     [747, 495, 1]
-    # ]
-
-    # draw_naive_pic(sorted_chosen_points, sorted_chosen_projected_points)
-    draw_naive_pic(None, None)
+    print("Chosen distorted points: ", sorted_chosen_projected_points)
+    print("Chosen normal points: ", sorted_chosen_points)
 
 
-    # draw_naive(points, projected_points)
-    # draw_desired_rectangle(img, sorted_chosen_points, sorted_chosen_projected_points)
-    # remove_distortion_naive(sorted_chosen_points, sorted_chosen_projected_points, img, img_path)
-    # remove_distortion_naive(projected_points, points, img_path)
+    draw_naive_pic(sorted_chosen_projected_points, sorted_chosen_points, img_path)
+    draw_naive_pic(None, None, img_path)
 
-def draw_naive_pic(points, points_proj):
-    img = Image.open("box.jpg")
+def draw_naive_pic(points, points_proj, img_path):
+    img = Image.open(img_path)
     img_copy = Image.new('RGB', (img.size[0], img.size[1]), "black")
     print("Image size: {} x {}".format(img.size[1], img.size[0]))
             
     # box.jpg
-    points = [
-        [358, 372, 1], 
-        [372, 627, 1], 
-        [766, 262, 1],
-        [747, 493, 1] 
-    ]
 
-    points_proj = [
-        [364, 371, 1], 
-        [364, 495, 1], 
-        [747, 371, 1], 
-        [747, 495, 1]
-    ]
+    print("POINTS: ", points)
+    print("POINTS TYPE: ", type(points))
+
+    print("POINTS_PROJ: ", points_proj)
+    print("POINTS_PROJ TYPE: ", type(points_proj))
+
 
     P = get_projective_matrix_naive(points, points_proj)
 
@@ -283,10 +256,10 @@ def draw_naive_pic(points, points_proj):
     for i in range(cols):        
         for j in range(rows):  
             
-            new_coordinates = P_inverse.dot([i, j, 1]) # lambda * X' = P * X
+            new_coordinates = P_inverse.dot([i, j, 1])
             new_coordinates = [(x / new_coordinates[2]) for x in new_coordinates]
             
-            if (new_coordinates[0] >= 0 and new_coordinates[0] < cols-1 and            new_coordinates[1] >= 0 and new_coordinates[1] < rows-1):
+            if (new_coordinates[0] >= 0 and new_coordinates[0] < cols-1 and new_coordinates[1] >= 0 and new_coordinates[1] < rows-1):
                 tmp1 = img.getpixel((math.floor(new_coordinates[0]), math.floor(new_coordinates[1])))
                 tmp2 = img.getpixel((math.ceil(new_coordinates[0]), math.ceil(new_coordinates[1])))
                 img_copy.putpixel((i, j), tmp2)

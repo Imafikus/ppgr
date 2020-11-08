@@ -63,17 +63,17 @@ def get_projective_matrix_naive(points, projected_points):
 
 def test_projective_matrix_naive():
     points = [
+        [-3, -1, 1],
+        [3, -1, 1],
         [1, 1, 1],
-        [5, 2, 1],
-        [6, 4, 1],
-        [-1, 7, 1]
+        [-1, 1, 1]
     ]
 
     projected_points = [
-        [0, 0, 1],
-        [10, 0, 1],
-        [10, 5, 1],
-        [0, 5, 1]
+        [-2, -1, 1],
+        [2, -1, 1],
+        [2, 1, 1],
+        [-2, 1, 1]
     ]
 
     P_matrix, alpha, beta, gamma = get_projective_matrix_naive(points, projected_points)

@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import math
 
 chosen_points = []
 
@@ -90,6 +91,8 @@ def get_projective_matrix_naive(points, projected_points):
     D = np.array(points[0]) * alpha + np.array(points[1]) * beta + np.array(points[2]) * gamma
     print(D.round(decimals=5))
 
+    return P_matrix
+
 
 def determine_desired_coordinates(sorted_points): 
     """
@@ -118,6 +121,7 @@ def draw_desired_rectangle(img, points):
 
 def main():     
     img = cv2.imread('primer1.jpg')
+    print(img)
 
     print ("Please select four points in the image")
 
@@ -137,11 +141,29 @@ def main():
     desired_coordinates = determine_desired_coordinates(sorted_chosen_points)
     print("Desired coordinates: ", desired_coordinates)
 
-    get_projective_matrix_naive(sorted_chosen_points, desired_coordinates)
+    P_matrix = get_projective_matrix_naive(sorted_chosen_points, desired_coordinates)
+    P_matrix_inv = np.linalg.inv(P_matrix)
     
-    # draw_desired_rectangle(img, rectangle_coordinates)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    img_blank = np.zeros(img.shape, dtype=np.uint8)
+    
+    cols = img_blank.shape[0]
+    rows = img_blank.shape[1]
+
+    for i in range(cols):
+        for j in range(rows):
+            new_coordinates = P_matrix_inv.dot([i, j , 1])
+            new_coordinates = [(x / new_coordinates[2]) for x in new_coordinates]
+
+            #? Check boundaries
+            if (new_coordinates[0] >= 0 and new_coordinates[0] < cols-1 and new_coordinates[1] >= 0 and new_coordinates[1] < rows-1):
+                new_pixel_value = img[math.ceil(new_coordinates[0])][math.ceil(new_coordinates[1])]
+                img_blank[i][j] = new_pixel_value
+    
+
+    cv2.imshow('Removed distortion img', img_blank)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 
 if __name__ == "__main__":

@@ -59,28 +59,14 @@ def get_projective_matrix_naive(points, projected_points):
     p2_matrix = np.transpose(p2_matrix)
     
     P = p2_matrix.dot(np.linalg.inv(p1_matrix))
-    return (P, alpha, beta, gamma)
+    return (P.round(decimals=5) / P.sum(), alpha, beta, gamma)
 
-def test_projective_matrix_naive():
-    points = [
-        [-3, -1, 1],
-        [3, -1, 1],
-        [1, 1, 1],
-        [-1, 1, 1]
-    ]
-
-    projected_points = [
-        [-2, -1, 1],
-        [2, -1, 1],
-        [2, 1, 1],
-        [-2, 1, 1]
-    ]
-
+def test_projective_matrix_naive(points, projected_points):
     P_matrix, alpha, beta, gamma = get_projective_matrix_naive(points, projected_points)
-    P_matrix = P_matrix / np.sum(P_matrix)
-    print("######## NAIVE ########")
-    print("Projective matrix for naive matrix, rounded on the 5th decimal")
-    print(P_matrix.round(decimals=5))
+    
+    print("NAIVE")
+    print("Projective matrix for naive algorithm, rounded on the 5th decimal")
+    print(P_matrix)
     print()
     
     
@@ -88,6 +74,108 @@ def test_projective_matrix_naive():
     D = np.array(points[0]) * alpha + np.array(points[1]) * beta + np.array(points[2]) * gamma
     print(D.round(decimals=5))
 
+def get_projective_matrix_dlt(points, projected_points, get_normalized = True):    
+    main_matrix = []
+    n = len(points)
+    for i in range(n):
+        main_matrix.append([
+            0, 0, 0, 
+            -projected_points[i][2]*points[i][0], -projected_points[i][2]*points[i][1], -projected_points[i][2]*points[i][2], 
+            projected_points[i][1]*points[i][0], projected_points[i][1]*points[i][1], projected_points[i][1]*points[i][2]
+        ])     
+
+        main_matrix.append([
+            projected_points[i][2]*points[i][0], projected_points[i][2]*points[i][1], projected_points[i][2]*points[i][2],
+            0, 0, 0,
+            -projected_points[i][0]*points[i][0], -projected_points[i][0]*points[i][1], -projected_points[i][0]*points[i][2]
+        ])
+
+    _, _, V = np.linalg.svd(main_matrix, full_matrices = True)
+    P_matrix_DLT = V[8]*(-1)
+    
+    if get_normalized:
+        return P_matrix_DLT.round(decimals=5).reshape((3, 3)) / P_matrix_DLT.sum()
+    else:
+        return P_matrix_DLT.round(decimals=5).reshape((3, 3))
+        
+
+def test_projective_matrix_dlt(points, projected_points):
+
+    P_matrix = get_projective_matrix_dlt(points, projected_points)
+    print("DLT")
+    print("Projective matrix for dlt algorithm, rounded on the 5th decimal")
+    print(P_matrix)
+    print()
+    
+def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp):
+    print("COMPARE DLT AND NAIVE")
+    print('DLT is calculated on 6 points, Naive is calculated on 4 points, both are rounded and compared')
+    P_matrix_DLT = get_projective_matrix_dlt(dlt_p, dlt_pp)
+    print(type(P_matrix_DLT))
+    P_matrix_naive, _, _, _ = get_projective_matrix_naive(naive_p, naive_pp)
+    print(P_matrix_naive)
+    print()
+
+    print('Comparison of individual elements: ')
+    print(P_matrix_DLT.round() == P_matrix_naive.round())
+    print()
+
+def test_dlt_coordinates_scaled_vs_untouched_coordinates(points, projected_points):
+    print("RESCALE COORDINATES FOR DLT")
+    scaled_projected_points = np.array(projected_points) * 2
+    scaled_points = np.array(points) * 3
+    
+
+    P_matrix = get_projective_matrix_dlt(points, projected_points, get_normalized=False)
+    print("Projective matrix before rescale:")
+    print(P_matrix)
+    print()
+
+
+    P_matrix_after_rescale = get_projective_matrix_dlt(scaled_points, scaled_projected_points, get_normalized=False)
+    print("Projective matrix after rescale:")
+    print(P_matrix_after_rescale)
+    print()
+
+def get_projective_matrix_dlt_normalized(points, projected_points):
+
 
 if __name__ == "__main__":
-    test_projective_matrix_naive()
+    points_for_naive = [
+        [-3, -1, 1],
+        [3, -1, 1],
+        [1, 1, 1],
+        [-1, 1, 1]
+    ]
+
+    projected_points_for_naive = [
+        [-2, -1, 1],
+        [2, -1, 1],
+        [2, 1, 1],
+        [-2, 1, 1]
+    ]
+
+    points_for_dlt = [
+        [-3, -1, 1],
+        [3, -1, 1],
+        [1, 1, 1],
+        [-1, 1, 1],
+        [1, 2, 3],
+        [-8, -2 ,1]
+    ]
+
+    projected_points_for_dlt = [
+        [-2, -1, 1],
+        [2, -1, 1],
+        [2, 1, 1],
+        [-2, 1, 1],
+        [2, 1, 4],
+        [-16, -5, 4]
+    ]
+    
+    
+    test_projective_matrix_naive(points_for_naive, projected_points_for_naive)
+    test_projective_matrix_dlt(points_for_dlt, projected_points_for_dlt)
+    compare_dlt_naive(points_for_dlt, projected_points_for_dlt, points_for_naive, projected_points_for_naive)
+    test_dlt_coordinates_scaled_vs_untouched_coordinates(points_for_dlt, projected_points_for_dlt)
+

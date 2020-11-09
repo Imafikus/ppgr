@@ -179,7 +179,7 @@ def remove_distortion_naive(points, projected_points, img_path):
 def main():     
 
     #? Put different img path here if you want another image
-    img_path = 'spomenik.jpg'
+    img_path = 'zgrada.jpg'
 
     img = cv2.imread(img_path)
     img1 = img

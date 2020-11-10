@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import math
 
 def solve_system(points):
 
@@ -122,8 +123,8 @@ def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp):
 
 def test_dlt_coordinates_scaled_vs_untouched_coordinates(points, projected_points):
     print("RESCALE COORDINATES FOR DLT")
-    scaled_projected_points = np.array(projected_points) * 2
-    scaled_points = np.array(points) * 3
+    scaled_projected_points = normalize_points(projected_points)
+    scaled_points = normalize_points(points)
     
 
     P_matrix = get_projective_matrix_dlt(points, projected_points, get_normalized=False)
@@ -137,7 +138,84 @@ def test_dlt_coordinates_scaled_vs_untouched_coordinates(points, projected_point
     print(P_matrix_after_rescale)
     print()
 
+def get_homo_coef(points):
+    coef = sum([math.sqrt(p[0]*p[0] + p[1]*p[1]) for p in points]) / len(points)
+    return coef
+
+def get_normalized_points(points):
+    center_x = sum([p[0] for p in points]) / len(points)
+    center_y = sum([p[1] for p in points]) / len(points)
+
+    print("CENTER_X: ", center_x)
+    print("CENTER_Y: ", center_y)
+    
+
+    translated_points = [[p[0] - center_x, p[1] - center_y] for p in points]
+    print("TRANSLATED_POINTS: ", translated_points)
+
+    coef = get_homo_coef(translated_points)
+    print("COEF: ", coef)
+
+    T_matrix = [
+        [math.sqrt(2) / coef, 0, center_x * (-1)],
+        [0, math.sqrt(2) / coef, center_y * (-1)],
+        [0, 0, 1],
+    ]
+
+    return np.array(T_matrix)
+
+def normalize_points(points):
+    return [[x / z, y / z, 1] for [x, y, z] in points]
+
 def get_projective_matrix_dlt_normalized(points, projected_points):
+
+    points = normalize_points(points)
+    projected_points = normalize_points(projected_points)
+
+    T_matrix = get_normalized_points(points)
+    T_projected_matrix = get_normalized_points(projected_points)
+
+    points = np.transpose(points)
+    projected_points = np.transpose(projected_points)
+
+    M = T_matrix.dot(points)
+    M_proj = T_projected_matrix.dot(projected_points)
+
+    M = np.transpose(M)
+    M_proj = np.transpose(M_proj)
+
+    print("M: ", M)
+    print("M_proj: ", M_proj)
+
+
+
+    dlt = get_projective_matrix_dlt(M, M_proj, get_normalized=False)
+
+    res = (np.linalg.inv(T_projected_matrix)).dot(dlt).dot(T_matrix)
+
+    return res, T_matrix, T_projected_matrix
+
+
+def test_projective_matrix_dlt_normalized(points, projected_points):
+    print("DLT NORMALIZED:")
+    print()
+    
+    res, T_matrix, T_projected_matrix = get_projective_matrix_dlt_normalized(points, projected_points)
+    
+    print("DLT matrix calculated with 6 points, rounded on 5 decimals: ")
+    print(res.round(decimals=5))
+    print()
+
+    print("T matrix calculated with 6 points: ")
+    print(T_matrix)
+    print()
+
+    print("T' matrix calculated with 6 points: ")
+    print(T_projected_matrix)
+    print()
+
+
+
 
 
 if __name__ == "__main__":
@@ -178,4 +256,5 @@ if __name__ == "__main__":
     test_projective_matrix_dlt(points_for_dlt, projected_points_for_dlt)
     compare_dlt_naive(points_for_dlt, projected_points_for_dlt, points_for_naive, projected_points_for_naive)
     test_dlt_coordinates_scaled_vs_untouched_coordinates(points_for_dlt, projected_points_for_dlt)
+    test_projective_matrix_dlt_normalized(points_for_dlt, projected_points_for_dlt)
 

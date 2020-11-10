@@ -1,5 +1,4 @@
 import numpy as np
-import cv2
 import math
 
 def solve_system(points):
@@ -97,13 +96,14 @@ def get_projective_matrix_dlt(points, projected_points, get_normalized = True):
     if get_normalized:
         return P_matrix_DLT.round(decimals=5).reshape((3, 3)) / P_matrix_DLT.sum()
     else:
-        return P_matrix_DLT.round(decimals=5).reshape((3, 3))
+        return P_matrix_DLT.reshape((3, 3))
         
 
 def test_projective_matrix_dlt(points, projected_points):
 
     P_matrix = get_projective_matrix_dlt(points, projected_points)
-    print("DLT")
+    print()
+    print("DLT:")
     print("Projective matrix for dlt algorithm, rounded on the 5th decimal")
     print(P_matrix)
     print()
@@ -112,7 +112,6 @@ def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp):
     print("COMPARE DLT AND NAIVE")
     print('DLT is calculated on 6 points, Naive is calculated on 4 points, both are rounded and compared')
     P_matrix_DLT = get_projective_matrix_dlt(dlt_p, dlt_pp)
-    print(type(P_matrix_DLT))
     P_matrix_naive, _, _, _ = get_projective_matrix_naive(naive_p, naive_pp)
     print(P_matrix_naive)
     print()
@@ -146,15 +145,9 @@ def get_normalized_points(points):
     center_x = sum([p[0] for p in points]) / len(points)
     center_y = sum([p[1] for p in points]) / len(points)
 
-    print("CENTER_X: ", center_x)
-    print("CENTER_Y: ", center_y)
-    
-
     translated_points = [[p[0] - center_x, p[1] - center_y] for p in points]
-    print("TRANSLATED_POINTS: ", translated_points)
 
     coef = get_homo_coef(translated_points)
-    print("COEF: ", coef)
 
     T_matrix = [
         [math.sqrt(2) / coef, 0, center_x * (-1)],
@@ -183,11 +176,6 @@ def get_projective_matrix_dlt_normalized(points, projected_points):
 
     M = np.transpose(M)
     M_proj = np.transpose(M_proj)
-
-    print("M: ", M)
-    print("M_proj: ", M_proj)
-
-
 
     dlt = get_projective_matrix_dlt(M, M_proj, get_normalized=False)
 

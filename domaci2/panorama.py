@@ -124,8 +124,8 @@ def remove_distortion_naive(points, projected_points, img_path_left, img_path_ri
 def main():     
 
     #? Put different img path here if you want another image
-    img_path_left = 'panorama1.jpg'
-    img_path_right = 'panorama2.jpg'
+    img_path_left = 'panorama1-min.jpg'
+    img_path_right = 'panorama2-min.jpg'
 
     points = [
         [1449, 2192, 1],

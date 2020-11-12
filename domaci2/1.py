@@ -123,7 +123,7 @@ def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp):
 def test_dlt_coordinates_scaled_vs_untouched_coordinates(points, projected_points):
     print("RESCALE COORDINATES FOR DLT")
     scaled_projected_points = np.array(projected_points) * 2
-    scaled_points = np.array(points) * 3
+    scaled_points = np.array(points) * 2
     
 
     P_matrix = get_projective_matrix_dlt(points, projected_points, get_normalized=False)

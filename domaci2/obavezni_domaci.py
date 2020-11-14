@@ -61,7 +61,7 @@ def get_projective_matrix_naive(points, projected_points):
     P = p2_matrix.dot(np.linalg.inv(p1_matrix))
     return (P.round(decimals=5) / P.sum(), alpha, beta, gamma)
 
-def test_projective_matrix_naive(points, projected_points):
+def test_projective_matrix_naive(points, projected_points): #? Funkcija koja ispisuje matricu dobijenu naivnim algoritmom
     P_matrix, alpha, beta, gamma = get_projective_matrix_naive(points, projected_points)
     
     print("NAIVE")
@@ -70,11 +70,11 @@ def test_projective_matrix_naive(points, projected_points):
     print()
     
     
-    print("Check point D: ")
+    print("Check point D: ") #? Proveravamo da li smo zaista dobro resili sistem
     D = np.array(points[0]) * alpha + np.array(points[1]) * beta + np.array(points[2]) * gamma
     print(D.round(decimals=5))
 
-def get_projective_matrix_dlt(points, projected_points, get_normalized = True):    
+def get_projective_matrix_dlt(points, projected_points, get_normalized = True):#? Uvek zelim da default ponasanje bude normalizacija matrice kako bismo mogli lako da uporedimo razlicite algoritme
     main_matrix = []
     n = len(points)
     for i in range(n):
@@ -99,7 +99,7 @@ def get_projective_matrix_dlt(points, projected_points, get_normalized = True):
         return P_matrix_DLT.reshape((3, 3))
         
 
-def test_projective_matrix_dlt(points, projected_points):
+def test_projective_matrix_dlt(points, projected_points): #? Ova funkcija samo racuna projektivno matricu naivnim algoritmom
 
     P_matrix = get_projective_matrix_dlt(points, projected_points)
     print()
@@ -108,7 +108,7 @@ def test_projective_matrix_dlt(points, projected_points):
     print(P_matrix)
     print()
     
-def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp):
+def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp): #? Ova funkcija racuna projektivnu matricu i za naivni i za obican DLT algoritam
     print("COMPARE DLT AND NAIVE")
     print('DLT is calculated on 6 points, Naive is calculated on 4 points, both are rounded and compared')
     P_matrix_DLT = get_projective_matrix_dlt(dlt_p, dlt_pp)
@@ -117,10 +117,11 @@ def compare_dlt_naive(dlt_p, dlt_pp, naive_p, naive_pp):
     print()
 
     print('Comparison of individual elements: ')
+    #? Poredimo elemente i ako je dovoljno mala razlika (odnosno, racun je dobar), dobicemo matricu koja ce svuda biti True, 
     print(P_matrix_DLT.round() == P_matrix_naive.round())
     print()
 
-def test_dlt_coordinates_scaled_vs_untouched_coordinates(points, projected_points):
+def test_dlt_coordinates_scaled_vs_untouched_coordinates(points, projected_points): #? Testiramo sta se desi kada promenimo koordinate
     print("RESCALE COORDINATES FOR DLT")
     scaled_projected_points = normalize_points(projected_points)
     scaled_points = normalize_points(points)
@@ -141,7 +142,7 @@ def get_homo_coef(points):
     coef = sum([math.sqrt(p[0]*p[0] + p[1]*p[1]) for p in points]) / len(points)
     return coef
 
-def get_normalized_points(points):
+def get_normalized_points(points): #? Funkcija koja radi translaciju i skaliranje
     center_x = sum([p[0] for p in points]) / len(points)
     center_y = sum([p[1] for p in points]) / len(points)
 
@@ -160,7 +161,7 @@ def get_normalized_points(points):
 def normalize_points(points):
     return [[x / z, y / z, 1] for [x, y, z] in points]
 
-def get_projective_matrix_dlt_normalized(points, projected_points):
+def get_projective_matrix_dlt_normalized(points, projected_points): #? Funkcija koja racuna projektivnu matricu prateci normalizovan DLT algoritam
 
     points = normalize_points(points)
     projected_points = normalize_points(projected_points)
@@ -184,7 +185,7 @@ def get_projective_matrix_dlt_normalized(points, projected_points):
     return res, T_matrix, T_projected_matrix
 
 
-def test_projective_matrix_dlt_normalized(points, projected_points):
+def test_projective_matrix_dlt_normalized(points, projected_points): #? Funkcija koja ispistuje konacno matricu i matrice T i T'
     print("DLT NORMALIZED:")
     print()
     
@@ -266,7 +267,8 @@ def testing_algorithms():
     print()
 
 
-if __name__ == "__main__":
+def run_tests_and_comparisons():
+
     points_for_naive = [
         [-3, -1, 1],
         [3, -1, 1],
@@ -298,11 +300,20 @@ if __name__ == "__main__":
         [2, 1, 4],
         [-16, -5, 4]
     ]
-    testing_algorithms()
-    
-    # test_projective_matrix_naive(points_for_naive, projected_points_for_naive)
-    # test_projective_matrix_dlt(points_for_dlt, projected_points_for_dlt)
-    # compare_dlt_naive(points_for_dlt, projected_points_for_dlt, points_for_naive, projected_points_for_naive)
-    # test_dlt_coordinates_scaled_vs_untouched_coordinates(points_for_dlt, projected_points_for_dlt)
-    # test_projective_matrix_dlt_normalized(points_for_dlt, projected_points_for_dlt)
 
+    test_projective_matrix_naive(points_for_naive, projected_points_for_naive)
+    test_projective_matrix_dlt(points_for_dlt, projected_points_for_dlt)
+    compare_dlt_naive(points_for_dlt, projected_points_for_dlt, points_for_naive, projected_points_for_naive)
+    test_dlt_coordinates_scaled_vs_untouched_coordinates(points_for_dlt, projected_points_for_dlt)
+    test_projective_matrix_dlt_normalized(points_for_dlt, projected_points_for_dlt)
+
+if __name__ == "__main__":
+    print("--------TESTING ALGORITHMS--------")
+    testing_algorithms()
+    print()
+
+    print("--------TESTS AND COMPARISONS--------")
+    run_tests_and_comparisons()
+    print()
+    
+    

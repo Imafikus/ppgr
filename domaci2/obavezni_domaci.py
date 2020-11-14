@@ -202,8 +202,68 @@ def test_projective_matrix_dlt_normalized(points, projected_points):
     print(T_projected_matrix)
     print()
 
+def rescale_matrix(matrix):
+    return matrix / matrix[0][0]
+
+def testing_algorithms():
+    y1 = [0, 1, 1]
+    y2 = [1, 1, 1]
+    y3 = [-3, -1, 1]
+    y4 = [-1, 2, 1]
+    y5 = [2, 0, 1]
+
+    y1p = [-1, 1, 1]
+    y2p = [5, 0, 1]
+    y3p = [1, -2, 1]
+    y4p = [2, 3, 1]
+    y5p = [4, 3, 1]
+
+    yn1 = [-2, -1, 1]
+    yn2 = [-1, -2, 1]
+    yn3 = [-7, 0, 1]
+    yn4 = [-2, 1, 1]
+    yn5 = [-1, -4, 1]
+
+    yn1p = [3, -2, 1]
+    yn2p = [4, 4, 1]
+    yn3p = [6, 0, 1]
+    yn4p = [1, 1, 1]
+    yn5p = [1, 3, 1]
+
+    print("Naivni i DLT za y i yp: PRIMER 1")
+    naive_matrix, _, _, _ = get_projective_matrix_naive([y1, y2, y3, y4], [y1p, y2p, y3p, y4p])
+    naive_matrix = rescale_matrix(naive_matrix)
+    dlt_matrix = get_projective_matrix_dlt([y1, y2, y3, y4], [y1p, y2p, y3p, y4p])
+    dlt_matrix = rescale_matrix(dlt_matrix)
+
+    print('NAIVE MATRIX: ')
+    print(naive_matrix)
+    print('DLT MATRIX')
+    print(dlt_matrix)
+    print()
 
 
+    print("DLT i modifikovani DLT za y i yp: PRIMER 2")
+    dlt_matrix = get_projective_matrix_dlt([y1, y2, y3, y4, y5], [y1p, y2p, y3p, y4p, y5p])
+    dlt_matrix = rescale_matrix(dlt_matrix)
+
+    dlt_matrix_normalized, _, _ = get_projective_matrix_dlt_normalized([y1, y2, y3, y4, y5], [y1p, y2p, y3p, y4p, y5p])
+    dlt_matrix_normalized = rescale_matrix(dlt_matrix_normalized)
+
+    print('DLT MATRIX: ')
+    print(dlt_matrix)
+    print('DLT MATRIX NORMALIZED')
+    print(dlt_matrix_normalized)
+    print()
+
+    
+    print("modifikovani DLT za yn i ynp: PRIMER 3")
+    dlt_matrix_normalized, _, _ = get_projective_matrix_dlt_normalized([yn1, yn2, yn3, yn4, yn5], [yn1p, yn2p, yn3p, yn4p, yn5p])
+    dlt_matrix_normalized = rescale_matrix(dlt_matrix_normalized)
+
+    print('DLT MATRIX NORMALIZED')
+    print(dlt_matrix_normalized)
+    print()
 
 
 if __name__ == "__main__":
@@ -238,11 +298,11 @@ if __name__ == "__main__":
         [2, 1, 4],
         [-16, -5, 4]
     ]
+    testing_algorithms()
     
-    
-    test_projective_matrix_naive(points_for_naive, projected_points_for_naive)
-    test_projective_matrix_dlt(points_for_dlt, projected_points_for_dlt)
-    compare_dlt_naive(points_for_dlt, projected_points_for_dlt, points_for_naive, projected_points_for_naive)
-    test_dlt_coordinates_scaled_vs_untouched_coordinates(points_for_dlt, projected_points_for_dlt)
-    test_projective_matrix_dlt_normalized(points_for_dlt, projected_points_for_dlt)
+    # test_projective_matrix_naive(points_for_naive, projected_points_for_naive)
+    # test_projective_matrix_dlt(points_for_dlt, projected_points_for_dlt)
+    # compare_dlt_naive(points_for_dlt, projected_points_for_dlt, points_for_naive, projected_points_for_naive)
+    # test_dlt_coordinates_scaled_vs_untouched_coordinates(points_for_dlt, projected_points_for_dlt)
+    # test_projective_matrix_dlt_normalized(points_for_dlt, projected_points_for_dlt)
 

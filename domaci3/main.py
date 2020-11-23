@@ -6,6 +6,10 @@ def is_identity_matrix(m):
 
     return (np.allclose(id, m_id))
 
+
+def check_matrix(m):
+    return is_identity_matrix(m) and int(np.linalg.det(m)) != 1
+
 def Euler2A(phi, theta, psi):
 
     Rz = np.array([
@@ -48,7 +52,7 @@ def Rodrigez(p, phi):
     # print('pT: ', pT)
     # print()
 
-    ppT = pT.dot(np.matrix(p)) #? Zadaje se kao niz, a treba nam matrica da bismo mogli da izmnozimo
+    ppT = pT.dot(np.matrix(p)) #?P zadaje se kao niz, a treba nam matrica da bismo mogli da izmnozimo
     # print('ppT: ', ppT)
     # print()
     
@@ -66,13 +70,55 @@ def Rodrigez(p, phi):
     print('Rp: ', Rp)
     print()
 
+def A2Euler(A):
+    if not check_matrix(A):
+        print('Invalid matrix provided, A must be ortogonal and det(A) must be 1')
+        return
+
+
+    euler_angles = None
+    if A[2][0] < 1:
+        if A[2][0] > -1: 
+            psi = np.arctan2(A[1][0], A[0][0])
+            theta = np.arcsin(-A[2][0])
+            phi = np.arctan2(A[2][1], A[2][2])
+            euler_angles = [phi, theta, psi]
+        else:
+            psi = np.arctan2(A[1][0], A[1][1])
+            theta = np.pi / 2
+            phi = 0
+            euler_angles = [phi, theta, psi]
+    else:
+        psi = np.arctan2(A[1][0], A[1][1])
+        theta = np.pi / 2
+        phi = 0
+        euler_angles = [phi, theta, psi]
+
+    print('=== A2Euler ===')
+    print('euler_angles: ', euler_angles)
+    print()
+
+    return np.array(euler_angles)
 
 
 def main():
-    A = Euler2A(-np.arctan(1/4), -np.arcsin(8/9), np.arctan(4))
+    phi = -np.arctan(1/4)
+    theta = -np.arcsin(8/9)
+    psi = np.arctan(4)
+    starting_angles = np.array([phi, theta, psi])
+
+    A = Euler2A(phi, theta, psi)
+
+    print('phi: ', phi)
+    print('theta: ', theta)
+    print('psi: ', psi)
+
     
     Rp = Rodrigez(np.array([1 / 3, -2 / 3, 2 / 3]), np.pi / 2)
     # print(Rodrigez((np.sqrt(2)/2) * np.array([1, 1, 0]), np.pi / 3))
+
+    a2_euler_angles = A2Euler(A)
+    print('Compare starting_angles and euler_angles: ', starting_angles == a2_euler_angles)
 
 if __name__ == "__main__":
     main()

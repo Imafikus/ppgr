@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import linalg
 
 def is_identity_matrix(m):
     id = np.eye(3)
@@ -45,77 +46,37 @@ def AxisAngle(A):
     if not check_matrix(A):
         print('Invalid matrix provided, A must be ortogonal and det(A) must be 1')
         return
+
+    _, p = linalg.eigs(A, k=1, sigma=1)
+    p = p.flatten().astype(float)
+
+    v = np.array([0, 0, 1])
     
-    row1 = get_normalized_vector(A[0] - 1)
-    row2 = get_normalized_vector(A[1] - 1)
-    row3 = get_normalized_vector(A[2] - 1)
-
-    cross1 = np.cross(row1, row2)
-    print('cross1: ', cross1)
-
-    if cross1.any() != 0:
-        p = cross1
-    
-    else:
-        cross2 = np.cross(row1, row3)
-        
-        if cross2.any() != 0:
-            p = cross2
-        
-        else:
-            cross3 = np.cross(row2, row3)
-            p = cross3
-
-    p = get_normalized_vector(p)
-
-    u = A[0] - 1
-    if u.all() == 0:
-        u = A[1] - 1
-
-        if u.all() == 0:
-            u = A[2] - 1
-    u = get_normalized_vector(u)
-
+    u = get_normalized_vector(np.cross(p, v))
     u_p = np.matmul(A, u)
-    u_p = get_normalized_vector(u_p)
+    
+    phi = np.arccos(np.dot(u, u_p))
 
-    phi = np.arccos(u.dot(u_p))
-
-    mp_matrix = np.array([
-        [u[0], u[1], u[2]],
-        [u_p[0], u_p[1], u_p[2]],
-        [p[0], p[1], p[2]],
-    ])
-
-    if np.linalg.det(mp_matrix) < 0:
+    mixed_product = np.dot(u, np.cross(u_p, p))
+    if mixed_product < 0:
         p = -p
 
     print('=== AxisAngle ===')
     print('p: ', p)
     print('phi: ', phi)
-
-    return p, phi
-
+    print()
 
 
 def Rodrigez(p, phi):
-    # print('p: ', p)
-    # print()
     pT = np.matrix(p).T #? obican transpose ne radi lepo sa 1D matricama
-    # print('pT: ', pT)
-    # print()
 
     ppT = pT.dot(np.matrix(p)) #?p zadaje se kao niz, a treba nam matrica da bismo mogli da izmnozimo
-    # print('ppT: ', ppT)
-    # print()
     
     px = np.array([
         [0, -p[2], p[1]],
         [p[2], 0, -p[0]],
         [-p[1], p[0], 0],
     ])
-    # print('px: ', px)
-    # print()
 
     Rp = ppT + np.cos(phi) * (np.eye(3) - ppT) + np.sin(phi) * px
 
@@ -184,10 +145,7 @@ def Q2AngleAxis(q):
 
     return p, phi
 
-def main():
-    phi = -np.arctan(1/4)
-    theta = -np.arcsin(8/9)
-    psi = np.arctan(4)
+def show_functions(phi, theta, psi):
     starting_angles = np.array([phi, theta, psi])
 
     A = Euler2A(phi, theta, psi)
@@ -195,6 +153,9 @@ def main():
     print('phi: ', phi)
     print('theta: ', theta)
     print('psi: ', psi)
+    print()
+
+    AxisAngle(A)
 
     p = np.array([1 / 3, -2 / 3, 2 / 3])
     
@@ -203,14 +164,35 @@ def main():
 
     a2_euler_angles = A2Euler(A)
     print('Compare starting_angles and euler_angles: ', starting_angles == a2_euler_angles)
+    print()
 
 
     q = AxisAngle2Q(p, np.pi / 2)
     
     p_q2_angle_axis, phi = Q2AngleAxis(q)
     print('Compare starting p and p_q2_angle_axis: ', p == p_q2_angle_axis)
+    print()
 
-    AxisAngle(A)
+def main():
+    phi_test_case = -np.arctan(1/4)
+    theta_test_case = -np.arcsin(8/9)
+    psi_test_case = np.arctan(4)
+    print('****** TEST CASE ******')
+    print()
+    show_functions(phi_test_case, theta_test_case, psi_test_case)
+    print('****** END TEST CASE ******')
+    print()
+
+
+    phi_custom_case = (3 * np.pi) / 4
+    theta_custom_case = np.pi / 2
+    psi_custom_case = np.pi / 2
+    print('****** CUSTOM CASE ******')
+    print()
+    show_functions(phi_custom_case, theta_custom_case, psi_custom_case)
+    print('****** END CUSTOM CASE ******')
+    print()
+
 
 if __name__ == "__main__":
     main()

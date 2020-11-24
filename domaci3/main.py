@@ -101,6 +101,19 @@ def A2Euler(A):
     return np.array(euler_angles)
 
 
+def AxisAngle2Q(p, phi):
+    normalized_p = p / np.sqrt(np.sum(p**2))
+    w = np.cos(phi / 2)
+
+    im = np.sin(phi / 2) * normalized_p
+
+    q = np.append(im, w)
+    print('=== AxisAngle2Q ===')
+    print('quaternion: ', q)
+    print()
+
+    return q
+
 def main():
     phi = -np.arctan(1/4)
     theta = -np.arcsin(8/9)
@@ -113,12 +126,16 @@ def main():
     print('theta: ', theta)
     print('psi: ', psi)
 
+    p = np.array([1 / 3, -2 / 3, 2 / 3])
     
-    Rp = Rodrigez(np.array([1 / 3, -2 / 3, 2 / 3]), np.pi / 2)
+    Rp = Rodrigez(p, np.pi / 2)
     # print(Rodrigez((np.sqrt(2)/2) * np.array([1, 1, 0]), np.pi / 3))
 
     a2_euler_angles = A2Euler(A)
     print('Compare starting_angles and euler_angles: ', starting_angles == a2_euler_angles)
+
+
+    q = AxisAngle2Q(p, np.pi / 2)
 
 if __name__ == "__main__":
     main()

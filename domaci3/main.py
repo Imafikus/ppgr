@@ -117,6 +117,24 @@ def AxisAngle2Q(p, phi):
 
     return q
 
+def Q2AngleAxis(q):
+    q = get_normalized_vector(q)
+    w = q[3]
+
+    phi = 2 * np.arccos(w)
+
+    if np.abs(w) == 1.0:
+        p = np.array([1, 0, 0])
+    else:
+        p = get_normalized_vector(np.array(q[:-1]))
+
+    print('=== Q2AngleAxis ===')
+    print('p: ', p)
+    print('phi: ', phi)
+    print()
+
+    return p, phi
+
 def main():
     phi = -np.arctan(1/4)
     theta = -np.arcsin(8/9)
@@ -139,6 +157,10 @@ def main():
 
 
     q = AxisAngle2Q(p, np.pi / 2)
+    
+    p_q2_angle_axis, phi = Q2AngleAxis(q)
+    print('Compare starting p and p_q2_angle_axis: ', p == p_q2_angle_axis)
+
 
 if __name__ == "__main__":
     main()

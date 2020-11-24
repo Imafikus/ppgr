@@ -39,14 +39,64 @@ def Euler2A(phi, theta, psi):
     print('A: ', A)
     print()
 
-
     return A
 
 def AxisAngle(A):
-    if not is_identity_matrix(A) or np.linalg.det(A) != 1.0:
+    if not check_matrix(A):
         print('Invalid matrix provided, A must be ortogonal and det(A) must be 1')
         return
     
+    row1 = get_normalized_vector(A[0] - 1)
+    row2 = get_normalized_vector(A[1] - 1)
+    row3 = get_normalized_vector(A[2] - 1)
+
+    cross1 = np.cross(row1, row2)
+    print('cross1: ', cross1)
+
+    if cross1.any() != 0:
+        p = cross1
+    
+    else:
+        cross2 = np.cross(row1, row3)
+        
+        if cross2.any() != 0:
+            p = cross2
+        
+        else:
+            cross3 = np.cross(row2, row3)
+            p = cross3
+
+    p = get_normalized_vector(p)
+
+    u = A[0] - 1
+    if u.all() == 0:
+        u = A[1] - 1
+
+        if u.all() == 0:
+            u = A[2] - 1
+    u = get_normalized_vector(u)
+
+    u_p = np.matmul(A, u)
+    u_p = get_normalized_vector(u_p)
+
+    phi = np.arccos(u.dot(u_p))
+
+    mp_matrix = np.array([
+        [u[0], u[1], u[2]],
+        [u_p[0], u_p[1], u_p[2]],
+        [p[0], p[1], p[2]],
+    ])
+
+    if np.linalg.det(mp_matrix) < 0:
+        p = -p
+
+    print('=== AxisAngle ===')
+    print('p: ', p)
+    print('phi: ', phi)
+
+    return p, phi
+
+
 
 def Rodrigez(p, phi):
     # print('p: ', p)
@@ -55,7 +105,7 @@ def Rodrigez(p, phi):
     # print('pT: ', pT)
     # print()
 
-    ppT = pT.dot(np.matrix(p)) #?P zadaje se kao niz, a treba nam matrica da bismo mogli da izmnozimo
+    ppT = pT.dot(np.matrix(p)) #?p zadaje se kao niz, a treba nam matrica da bismo mogli da izmnozimo
     # print('ppT: ', ppT)
     # print()
     
@@ -77,7 +127,6 @@ def A2Euler(A):
     if not check_matrix(A):
         print('Invalid matrix provided, A must be ortogonal and det(A) must be 1')
         return
-
 
     euler_angles = None
     if A[2][0] < 1:
@@ -161,6 +210,7 @@ def main():
     p_q2_angle_axis, phi = Q2AngleAxis(q)
     print('Compare starting p and p_q2_angle_axis: ', p == p_q2_angle_axis)
 
+    AxisAngle(A)
 
 if __name__ == "__main__":
     main()

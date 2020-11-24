@@ -6,9 +6,12 @@ def is_identity_matrix(m):
 
     return (np.allclose(id, m_id))
 
-
 def check_matrix(m):
     return is_identity_matrix(m) and int(np.linalg.det(m)) != 1
+
+def get_normalized_vector(v):
+    return v / np.sqrt(np.sum(v**2))
+
 
 def Euler2A(phi, theta, psi):
 
@@ -102,7 +105,7 @@ def A2Euler(A):
 
 
 def AxisAngle2Q(p, phi):
-    normalized_p = p / np.sqrt(np.sum(p**2))
+    normalized_p = get_normalized_vector(p)
     w = np.cos(phi / 2)
 
     im = np.sin(phi / 2) * normalized_p

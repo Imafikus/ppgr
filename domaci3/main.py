@@ -1,15 +1,6 @@
 import numpy as np
 from scipy.sparse import linalg
 
-def is_identity_matrix(m):
-    id = np.eye(3)
-    m_id = m.dot(m.transpose())
-
-    return (np.allclose(id, m_id))
-
-def check_matrix(m):
-    return is_identity_matrix(m) and int(np.linalg.det(m)) != 1
-
 def get_normalized_vector(v):
     return v / np.sqrt(np.sum(v**2))
 
@@ -34,19 +25,15 @@ def Euler2A(phi, theta, psi):
         [ 0, np.sin(phi), np.cos(phi)],
     ])
 
-    A = (Rz.dot(Ry)).dot(Rx)
+    A = Rz.dot(Ry).dot(Rx)
 
     print('=== Euler2A ===')
-    print('A: ', A)
+    print('A: \n', A)
     print()
 
     return A
 
 def AxisAngle(A):
-    if not check_matrix(A):
-        print('Invalid matrix provided, A must be ortogonal and det(A) must be 1')
-        return
-
     _, p = linalg.eigs(A, k=1, sigma=1)
     p = p.flatten().astype(float)
 
@@ -60,11 +47,14 @@ def AxisAngle(A):
     mixed_product = np.dot(u, np.cross(u_p, p))
     if mixed_product < 0:
         p = -p
-
+    
+    print()
     print('=== AxisAngle ===')
     print('p: ', p)
     print('phi: ', phi)
     print()
+
+    return p, phi
 
 
 def Rodrigez(p, phi):
@@ -81,14 +71,12 @@ def Rodrigez(p, phi):
     Rp = ppT + np.cos(phi) * (np.eye(3) - ppT) + np.sin(phi) * px
 
     print('=== Rodrigez ===')
-    print('Rp: ', Rp)
+    print('Rp: \n', Rp)
     print()
+    
+    return Rp
 
 def A2Euler(A):
-    if not check_matrix(A):
-        print('Invalid matrix provided, A must be ortogonal and det(A) must be 1')
-        return
-
     euler_angles = None
     if A[2][0] < 1:
         if A[2][0] > -1: 
@@ -148,19 +136,20 @@ def Q2AngleAxis(q):
 def show_functions(phi, theta, psi):
     starting_angles = np.array([phi, theta, psi])
 
-    A = Euler2A(phi, theta, psi)
-
+    print('Starting angles: ')
     print('phi: ', phi)
     print('theta: ', theta)
     print('psi: ', psi)
     print()
-
-    AxisAngle(A)
-
-    p = np.array([1 / 3, -2 / 3, 2 / 3])
     
-    Rp = Rodrigez(p, np.pi / 2)
-    # print(Rodrigez((np.sqrt(2)/2) * np.array([1, 1, 0]), np.pi / 3))
+    A = Euler2A(phi, theta, psi)
+
+    p, new_phi = AxisAngle(A)    
+    
+    Rp = Rodrigez(p, new_phi)
+
+    print('Compare Rp and A: \n', Rp == A)
+    print()
 
     a2_euler_angles = A2Euler(A)
     print('Compare starting_angles and euler_angles: ', starting_angles == a2_euler_angles)
@@ -184,9 +173,9 @@ def main():
     print()
 
 
-    phi_custom_case = (3 * np.pi) / 4
-    theta_custom_case = np.pi / 2
-    psi_custom_case = np.pi / 2
+    phi_custom_case = np.pi / 3
+    theta_custom_case = np.pi / 3
+    psi_custom_case = np.pi / 3
     print('****** CUSTOM CASE ******')
     print()
     show_functions(phi_custom_case, theta_custom_case, psi_custom_case)

@@ -198,9 +198,9 @@ def main():
     print('****** END TEST CASE ******')
     print()
 
-    phi_custom_case = np.pi / 5
-    theta_custom_case = np.pi / 6
-    psi_custom_case = np.pi / 7
+    phi_custom_case = np.pi / 3
+    theta_custom_case = np.pi / 3
+    psi_custom_case = np.pi / 3
     print('****** CUSTOM CASE ******')
     print()
     show_functions(phi_custom_case, theta_custom_case, psi_custom_case)

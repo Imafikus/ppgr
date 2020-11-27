@@ -2,7 +2,20 @@ import numpy as np
 from scipy.sparse import linalg
 
 def get_normalized_vector(v):
-    return v / np.sqrt(np.sum(v**2))
+    return v / np.linalg.norm(v)
+
+def check_matrix(A):
+    id = np.eye(3).astype(int)
+
+    AT = A.T
+
+    if not (AT.dot(A).round() == id).all():
+        return False 
+    
+    if np.linalg.det(A).round() != 1.0:
+        return False 
+    
+    return True
 
 
 def Euler2A(phi, theta, psi):
@@ -34,6 +47,11 @@ def Euler2A(phi, theta, psi):
     return A
 
 def AxisAngle(A):
+
+    if not check_matrix(A):
+        print('Invalid matrix provided')
+        return
+    
     _, p = linalg.eigs(A, k=1, sigma=1)
     p = p.flatten().astype(float)
 
@@ -77,7 +95,10 @@ def Rodrigez(p, phi):
     return Rp
 
 def A2Euler(A):
-    euler_angles = None
+    if not check_matrix(A):
+        print('Invalid matrix provided')
+        return
+
     if A[2][0] < 1:
         if A[2][0] > -1: 
             psi = np.arctan2(A[1][0], A[0][0])
@@ -104,6 +125,7 @@ def A2Euler(A):
 
 def AxisAngle2Q(p, phi):
     normalized_p = get_normalized_vector(p)
+
     w = np.cos(phi / 2)
 
     im = np.sin(phi / 2) * normalized_p
@@ -116,9 +138,14 @@ def AxisAngle2Q(p, phi):
     return q
 
 def Q2AngleAxis(q):
-    q = get_normalized_vector(q)
+
+    norm_q = get_normalized_vector(q)
+    
     w = q[3]
 
+    if w < 0:
+        q = -q
+    
     phi = 2 * np.arccos(w)
 
     if np.abs(w) == 1.0:
@@ -155,11 +182,10 @@ def show_functions(phi, theta, psi):
     print('Compare starting_angles and euler_angles: ', starting_angles == a2_euler_angles)
     print()
 
-
-    q = AxisAngle2Q(p, np.pi / 2)
+    q = AxisAngle2Q(p, new_phi)
     
     p_q2_angle_axis, phi = Q2AngleAxis(q)
-    print('Compare starting p and p_q2_angle_axis: ', p == p_q2_angle_axis)
+    print('Compare starting p and p_q2_angle_axis: ', p.round() == p_q2_angle_axis.round())
     print()
 
 def main():
@@ -172,10 +198,9 @@ def main():
     print('****** END TEST CASE ******')
     print()
 
-
-    phi_custom_case = np.pi / 3
-    theta_custom_case = np.pi / 3
-    psi_custom_case = np.pi / 3
+    phi_custom_case = np.pi / 5
+    theta_custom_case = np.pi / 6
+    psi_custom_case = np.pi / 7
     print('****** CUSTOM CASE ******')
     print()
     show_functions(phi_custom_case, theta_custom_case, psi_custom_case)

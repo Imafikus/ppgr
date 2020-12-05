@@ -32,23 +32,32 @@ if __name__ == "__main__":
     frames = 60
 
     # temena pocetne i kranje pozicije
-    c_start = np.array([1, 1, 1])
-    c_end = np.array([3, 5, 7])
+    c_start = np.array([0.75, -1, 0])
+    c_end = np.array([0.5, 0.8, 0.75])
     
     # Pocetna duzina stranica
     startpoints = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-    endpoints = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 2]])
+    endpoints = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
     # pocetne rotacije
-    q0 = np.array([1.0 ,3.0, 3.0 , 1.0])
-    q1 = np.array([10.0, 1.0, 2.0, 3.0])
+    q0 = np.array([0.43882373, 0.03532013, 0.62183644, 0.64769257])
+    q1 = np.array([0.71725074, 0.17018643, -0.49442859,  0.46057391])
 
     # inicijalizacija animacije i iscrtavanja
-    fig = plt.figure()
+    fig = plt.figure(figsize=(7,7))
+    
     ax = fig.add_axes([0, 0, 1, 1], projection='3d')
+    
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+    
+    ax.set_xlim((-1.5, 1.5))
+    ax.set_ylim((-1.5, 1.5))
+    ax.set_zlim((-1.5, 1.5))
+    
+    ax.view_init(elev=20, azim=-10)
+    
 
     colors = ['r', 'g', 'b']
 
@@ -78,19 +87,16 @@ if __name__ == "__main__":
         
     lines = np.array(sum([ax.plot([], [], [], c=c) for c in colors], []))
     
-    ax.set_xlim((0, 8))
-    ax.set_ylim((0, 8))
-    ax.set_zlim((0, 8))
+    axis_current = np.array(axis_current).flatten().tolist()
+    print(axis_current)
 
-    axis_current = np.array(axis_current).flatten()
+    # steps = [slerp(q0, q1, frames, i/frames) for i in range(frames)]
 
-    steps = [slerp(q0, q1, frames, i/frames) for i in range(frames)]
-
-    def init():
-        for line in lines:
-            line.set_data([], [])
-            line.set_3d_properties([])
-        return lines
+    # def init():
+    #     for line in lines:
+    #         line.set_data([], [])
+    #         line.set_3d_properties([])
+    #     return lines
 
     def animate(frame):
         q = slerp(q0, q1, frames, frame)
@@ -107,11 +113,12 @@ if __name__ == "__main__":
 
         #exit()
         i = 0
-        for line, start, end in zip(axis_current, startpoints, endpoints):
-            start = transform(start, q) + t
+        for i in range(len(axis_current)):
+        
+            start = transform(startpoints[i], q) + t
             start = start.tolist()[0]
 
-            end = transform(end, q) + t
+            end = transform(endpoints[i], q) + t
             end = end.tolist()[0]   
             
             # ax.plot([start[0],end[0]], [start[1],end[1]],zs=[start[2],end[2]], color=colors[i])
@@ -119,8 +126,8 @@ if __name__ == "__main__":
             print('kurcina : ', kurcina)
             print('kurcina.shape : ', kurcina.shape)
 
-            line.set_data([start[0], end[0]], [start[1], end[1]])
-            line.set_3d_properties(kurcina)
+            axis_current[i].set_data([start[0], end[0]], [start[1], end[1]])
+            axis_current[i].set_3d_properties(start[2], end[2])
             i += 1
     #        fig.clear()
     

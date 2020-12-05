@@ -137,21 +137,19 @@ def AxisAngle2Q(p, phi):
 
     return q
 
-def Q2AngleAxis(q):
+def Q2AngleAxis(Q):
 
-    norm_q = get_normalized_vector(q)
-    
-    w = q[3]
+    Q /= np.sqrt(np.sum(Q**2))
+    if Q[3] < 0:
+        Q[3] *= -1
 
-    if w < 0:
-        q = -q
-    
-    phi = 2 * np.arccos(w)
+    phi = 2*np.arccos(Q[3])
 
-    if np.abs(w) == 1.0:
-        p = np.array([1, 0, 0])
+    if abs(abs(Q[3])-1) < 0.001:
+        p = [1,0,0]
     else:
-        p = get_normalized_vector(np.array(q[:-1]))
+        p = np.array([Q[0], Q[1], Q[2]])
+        p /= np.sqrt(np.sum(p**2))
 
     print('=== Q2AngleAxis ===')
     print('p: ', p)

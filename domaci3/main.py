@@ -88,9 +88,9 @@ def Rodrigez(p, phi):
 
     Rp = ppT + np.cos(phi) * (np.eye(3) - ppT) + np.sin(phi) * px
 
-    print('=== Rodrigez ===')
-    print('Rp: \n', Rp)
-    print()
+    # print('=== Rodrigez ===')
+    # print('Rp: \n', Rp)
+    # print()
     
     return Rp
 
@@ -151,10 +151,10 @@ def Q2AngleAxis(Q):
         p = np.array([Q[0], Q[1], Q[2]])
         p /= np.sqrt(np.sum(p**2))
 
-    print('=== Q2AngleAxis ===')
-    print('p: ', p)
-    print('phi: ', phi)
-    print()
+    # print('=== Q2AngleAxis ===')
+    # print('p: ', p)
+    # print('phi: ', phi)
+    # print()
 
     return p, phi
 

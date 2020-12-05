@@ -43,20 +43,19 @@ if __name__ == "__main__":
     q0 = np.array([1.0 ,3.0, 3.0 , 1.0])
     q1 = np.array([10.0, 1.0, 2.0, 3.0])
 
-
     # inicijalizacija animacije i iscrtavanja
     fig = plt.figure()
     ax = fig.add_axes([0, 0, 1, 1], projection='3d')
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax.set_xlim((0, 8))
-    ax.set_ylim((0, 8))
-    ax.set_zlim((0, 8))
 
     colors = ['r', 'g', 'b']
 
     # iscrtavanje pocetne i kranje pozicije
+
+    axis_current = []
+
     for i in range(3):
         # iscrtaj pocetnu poziciju
         start = transform(startpoints[i], q0).flatten() + c_start
@@ -64,19 +63,71 @@ if __name__ == "__main__":
 
         end = transform(endpoints[i], q0) + c_start 
         end = end.tolist()[0]
-
         ax.plot([start[0],end[0]], [start[1],end[1]],zs=[start[2],end[2]], color=colors[i])
+
+        axis_current.append(ax.plot([start[0],end[0]], [start[1],end[1]],zs=[start[2],end[2]], color=colors[i]))
 
         #iscrtaj krajnju poziciju
         start = transform(startpoints[i], q1) + c_end
         start = start.tolist()[0]
 
-        print('start: ', start)
-
         end = transform(endpoints[i], q1) + c_end
         end = end.tolist()[0]
 
         ax.plot([start[0],end[0]], [start[1],end[1]],zs=[start[2],end[2]], color=colors[i])
+        
+    lines = np.array(sum([ax.plot([], [], [], c=c) for c in colors], []))
+    
+    ax.set_xlim((0, 8))
+    ax.set_ylim((0, 8))
+    ax.set_zlim((0, 8))
 
+    axis_current = np.array(axis_current).flatten()
+
+    steps = [slerp(q0, q1, frames, i/frames) for i in range(frames)]
+
+    def init():
+        for line in lines:
+            line.set_data([], [])
+            line.set_3d_properties([])
+        return lines
+
+    def animate(frame):
+        q = slerp(q0, q1, frames, frame)
+        print('q:  ', q)
+        
+        t = frame * (c_end - c_start) / frames + c_start
+        print('t:  ', t)
+
+        print('axis_current: ', axis_current)
+        print('startpoints: ', startpoints)
+        print('endpoints: ', endpoints)
+        print('frames: ', frames)
+        print('frame: ', frame)
+
+        #exit()
+        i = 0
+        for line, start, end in zip(axis_current, startpoints, endpoints):
+            start = transform(start, q) + t
+            start = start.tolist()[0]
+
+            end = transform(end, q) + t
+            end = end.tolist()[0]   
+            
+            # ax.plot([start[0],end[0]], [start[1],end[1]],zs=[start[2],end[2]], color=colors[i])
+            kurcina = np.array([start[2], end[2]])
+            print('kurcina : ', kurcina)
+            print('kurcina.shape : ', kurcina.shape)
+
+            line.set_data([start[0], end[0]], [start[1], end[1]])
+            line.set_3d_properties(kurcina)
+            i += 1
+    #        fig.clear()
+    
+        return lines
+        # fig.canvas.draw()
+
+
+    anim = animation.FuncAnimation(fig, animate, frames=frames+1, interval=20, repeat=True, repeat_delay=200)
 
     plt.show()

@@ -158,6 +158,29 @@ def Q2AngleAxis(Q):
 
     return p, phi
 
+def Vector2Q(v, w=0):
+    if len(v) != 3:
+        print('Error: Invalid vector dimension (not 3)')
+        print(v)
+        sys.exit()
+    return np.array([v[0], v[1], v[2], w])
+
+def Euler2Q(phi, theta, psi):
+    phi_sin = np.sin(phi/2)
+    phi_cos = np.cos(phi/2)
+    theta_sin = np.sin(theta/2)
+    theta_cos = np.cos(theta/2)
+    psi_sin = np.sin(psi/2)
+    psi_cos = np.cos(psi/2)
+    
+    q0 = phi_sin*theta_cos*psi_cos - phi_cos*theta_sin*psi_sin
+    q1 = phi_cos*theta_sin*psi_cos + phi_sin*theta_cos*psi_sin
+    q2 = phi_cos*theta_cos*psi_sin - phi_sin*theta_sin*psi_cos
+    q3 = phi_cos*theta_cos*psi_cos + phi_sin*theta_sin*psi_sin
+
+    return np.array([q0, q1, q2, q3])
+
+
 def show_functions(phi, theta, psi):
     starting_angles = np.array([phi, theta, psi])
 

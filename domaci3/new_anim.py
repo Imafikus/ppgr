@@ -25,6 +25,8 @@ def inverse_q(q):
 def apply_transform(pos, q):    
     qi = inverse_q(q)
 
+    #? Izracunaj koliko se omerila svaka osa i vrati updateovane koordinate
+
     x = ppgr.Vector2Q([1, 0, 0])
     x = mul_q(mul_q(q, x), qi)
     x = np.array([[pos[i], pos[i]+x[i]] for i in range(3)])
@@ -40,7 +42,7 @@ def apply_transform(pos, q):
     return (x, y, z)
 
 def lerp(q1, q2, tm, t):
-    q = (1-(t/tm))*q1 + (t/tm)*q2
+    q = (1 - (t / tm)) * q1 + (t / tm) * q2
     return q
 
 def slerp(q1, q2, tm, t):
@@ -59,17 +61,16 @@ def slerp(q1, q2, tm, t):
 
 
 if __name__ == '__main__':
-    # Input parameters:
-    # Total number of frames
+    #? ukupan broj frejmova
     tm = 100
-    # Start position and rotation
+    
+    #? pocetna pozicija i rotacija
     p1 = np.array([0.5, -1, 0])
     q1 = ppgr.Euler2Q(math.radians(32), math.radians(-30), math.radians(75))
-    # End position and rotation
+    
+    #? Krajnja pozicija i rotacija
     p2 = np.array([0.5, 0.9, 0.75])
     q2 = ppgr.Euler2Q(math.radians(145), math.radians(-60), math.radians(-25))
-    # Should save the animation
-    save = False
 
     p = p1
     q = q1
@@ -79,11 +80,14 @@ if __name__ == '__main__':
     
     colors = ['r-', 'g-', 'b-']
 
+    #? izracunaj pocetnu poziciju i iscrtaj je
     r = apply_transform(p1, q1)
     axis_from = [ax.plot(r[i][0], r[i][1], r[i][2], colors[i])[0] for i in range(3)]
 
+    #? izracunaj poziciju koja ce se menjati tokom izvrsavanja programa (ista kao i pocetna na pocetku)
     axis_current = [ax.plot(r[i][0], r[i][1], r[i][2], colors[i])[0] for i in range(3)]
 
+    #? izracunaj krajnju poziciju i iscrtaj je
     r = apply_transform(p2, q2)
     axis_to = [ax.plot(r[i][0], r[i][1], r[i][2], colors[i])[0] for i in range(3)]
 
@@ -98,11 +102,16 @@ if __name__ == '__main__':
     ax.view_init(elev=20, azim=-10)
 
     def animate(frame):
+        #? transliraj ose
         p = lerp(p1, p2, tm, frame)
+
+        #? nadji trenutni vektor rotacije
         q = slerp(q1, q2, tm, frame)
+
         r = apply_transform(p, q)
         for i in range(len(axis_current)):
-
+            
+            #? postaviti novi polozaj objekta  
             axis_current[i].set_data(r[i][0], r[i][1])
             axis_current[i].set_3d_properties(r[i][2])
 
@@ -110,6 +119,7 @@ if __name__ == '__main__':
 
     anim = animation.FuncAnimation(fig, animate, frames=tm, interval=20, repeat=True, repeat_delay=200)
 
+    save = False
     if save:
         anim.save('animation.gif', fps=20)
 

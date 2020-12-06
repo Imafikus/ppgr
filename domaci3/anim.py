@@ -91,7 +91,7 @@ if __name__ == '__main__':
     p2 = ppgr.make_vector([0.5, 0.9, 0.75])
     q2 = euler2q(math.radians(145), math.radians(-60), math.radians(-25))
     # Should save the animation
-    save = True
+    save = False
 
     print('q1: ', q1)
     print('q2: ', q2)

@@ -6,7 +6,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import animation
 import main as ppgr
 
-# quaternion product
 def mul_q(q1, q2):
     v1 = q1[0:3]
     w1 = q1[3]
@@ -22,10 +21,10 @@ def conjugate_q(q):
 def inverse_q(q):
     return conjugate_q(q) / (np.linalg.norm(q)**2)
 
-def apply_transform(pos, q):    
+def transform(pos, q):    
     qi = inverse_q(q)
 
-    #? Izracunaj koliko se omerila svaka osa i vrati updateovane koordinate
+    #? Izracunaj koliko se pomerila svaka osa i vrati updateovane koordinate
 
     x = ppgr.Vector2Q([1, 0, 0])
     x = mul_q(mul_q(q, x), qi)
@@ -81,19 +80,15 @@ if __name__ == '__main__':
     colors = ['r-', 'g-', 'b-']
 
     #? izracunaj pocetnu poziciju i iscrtaj je
-    r = apply_transform(p1, q1)
-    axis_from = [ax.plot(r[i][0], r[i][1], r[i][2], colors[i])[0] for i in range(3)]
+    data = transform(p1, q1)
+    axis_from = [ax.plot(data[i][0], data[i][1], data[i][2], colors[i])[0] for i in range(3)]
 
     #? izracunaj poziciju koja ce se menjati tokom izvrsavanja programa (ista kao i pocetna na pocetku)
-    axis_current = [ax.plot(r[i][0], r[i][1], r[i][2], colors[i])[0] for i in range(3)]
+    axis_current = [ax.plot(data[i][0], data[i][1], data[i][2], colors[i])[0] for i in range(3)]
 
     #? izracunaj krajnju poziciju i iscrtaj je
-    r = apply_transform(p2, q2)
-    axis_to = [ax.plot(r[i][0], r[i][1], r[i][2], colors[i])[0] for i in range(3)]
-
-    ax.set_xlim((-4, 4))
-    ax.set_ylim((-4, 4))
-    ax.set_zlim((-4, 4))
+    data = transform(p2, q2)
+    axis_to = [ax.plot(data[i][0], data[i][1], data[i][2], colors[i])[0] for i in range(3)]
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -108,18 +103,18 @@ if __name__ == '__main__':
         #? nadji trenutni vektor rotacije
         q = slerp(q1, q2, tm, frame)
 
-        r = apply_transform(p, q)
+        data = transform(p, q)
         for i in range(len(axis_current)):
             
             #? postaviti novi polozaj objekta  
-            axis_current[i].set_data(r[i][0], r[i][1])
-            axis_current[i].set_3d_properties(r[i][2])
+            axis_current[i].set_data(data[i][0], data[i][1])
+            axis_current[i].set_3d_properties(data[i][2])
 
         fig.canvas.draw()
 
     anim = animation.FuncAnimation(fig, animate, frames=tm, interval=20, repeat=True, repeat_delay=200)
 
-    save = False
+    save = True
     if save:
         anim.save('animation.gif', fps=20)
 

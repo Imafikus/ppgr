@@ -37,7 +37,7 @@ def calc_C(T):
     return np.array([[c1, c2, c3]]) / c4
 
 def main():
-    n = 11 # 121 / 2017
+    n = 1 # 121 / 2017
     T = np.array([
         [5, -1-2*n, 3, 18-3*n],
         [0,   -1,   5,   21],

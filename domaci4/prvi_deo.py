@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def correct_if_needed(Q, R):
     
     for d in range(0, 3):
